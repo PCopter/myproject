@@ -1,0 +1,103 @@
+{% extends 'app_general/components/base.html'%}
+
+{% block site_title %}
+Minimum Standard Test
+{% endblock %}
+
+{% block content %}
+<section class="content-section content-section-single">
+    <div class="content-container">
+        <h2 class="content-title text-center">Minimum Standard Testing requirement (Unit) of each country</h2>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr >
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Item Test</th>
+                        <th class="text-center">Specification</th>
+                        <th class="text-center">Type</th>
+                        {% for country in countries %}
+                            <th class="country-header"><div>{{ country.name }}</div></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_test in item_tests %}
+                        {% for specification in item_test.specifications.all %}
+                            <tr class="{% cycle 'item-test-odd' 'item-test-even' %} item-test-row-{{ forloop.parentloop.counter0 }}">
+                                {% if forloop.first %}
+                                    <td rowspan="{{ item_test.specifications.count }}" class="text-center">{{ forloop.parentloop.counter }}</td>
+                                    <td rowspan="{{ item_test.specifications.count }}" class="text-center">{{ item_test.name }}</td>
+                                {% endif %}
+                                <td>{{ specification.description }}</td>
+                                <td class="text-center">{{ specification.test_type }}</td>
+                                {% for country in countries %}
+                                    <td class="country-col-{{ forloop.counter }} text-center">
+                                        {% for requirement in country.countrytestrequirement_set.all %}
+                                            {% if requirement.specification.id == specification.id %}
+                                                {{ requirement.requirement }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<style>
+    
+    .content-container {
+        overflow-x: auto;
+    }
+    .table-container {
+        position: relative;
+        max-height: 650px;
+        overflow: auto;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+        
+    }
+    th {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 2;
+    }
+    th.country-header {
+        height: 140px;
+        width: 30px;
+        vertical-align: bottom;
+    }
+    th.country-header div {
+        transform: rotate(-90deg);
+        white-space: nowrap;
+        width: 20px;
+    }
+    /* Adding colors to country columns */
+    {% for country in countries %}
+        .country-col-{{ forloop.counter }} {
+            background-color: {% cycle '#FCF9E2' '#e6f7ff' '#ffe6e6' '#e6ffe6' %};
+        }
+    {% endfor %}
+    tr:hover td {
+        
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3); /* Add subtle shadow for depth */
+    }
+    /* Add borders between item tests */
+    {% for item_test in item_tests %}
+        .item-test-row-{{ forloop.counter0 }} td {
+            border-top: 1px solid #000;
+        }
+    {% endfor %}
+</style>
+
+{% endblock %}
