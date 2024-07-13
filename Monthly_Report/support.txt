@@ -1,0 +1,28 @@
+cd myproject
+
+redis-server
+
+celery -A myproject beat -l info
+
+celery -A myproject worker --pool=eventlet -l info
+
+python manage.py runserver
+
+python manage.py shell
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+celery -A myproject worker --pool=solo -l info
+celery -A myproject worker --pool=eventlet -l info
+celery -A myproject worker -l info
+
+
+Task
+-Improve Backend เช่น ป้องกันการอัพข้อมูลซำๆ etc
+-Improve Frontend เช่น การแสดงจำนวนสถานะ การ์ดวิว
+
+-Display Model
+	-In Website (Pair-Duo)
+	-In mail
+
+

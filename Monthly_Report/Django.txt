@@ -1,0 +1,77 @@
+ทำไมถึงต้องเลือกใช้ Django
+1.การแสดงข้อมูลต่างๆ มีความสวยงาม มีความยืดหยุ่นสามารถประยุกต์ได้หลากหลายรูปแบบตามความต้องการของผู้ใช้งานได้
+2.การจัดการกับฐานข้อมูล ผู้ใช้งานสามารถใช้งานได้อย่างง่ายดาย ไม่ว่าจะเป็นการค้นหา การกรอง การเพิ่ม การแก้ไข การนับหรือการลบข้อมูล
+3.สามารถใช้ทำระบบที่ซับซ้อนมากขึ้นได้ เช่น การแจ้งเตือนอัตโนมัติได้ ฯลฯ
+4.เนื่องจากเป็นเว็บแอปพลิเคชันทำให้เข้าถึงข้อมูลได้ทุกที่ แต่ก็ยังมีความปลอดภัยสูง
+5.เหมาะสมสำหรับการพัฒนาเว็บแอปพลิเคชันที่มีความปลอดภัยและมีประสิทธิภาพสูง โดยเฉพาะสำหรับโปรเจ็คที่มีขนาดใหญ่หรือต้องการการจัดการฐานข้อมูลที่ซับซ้อน
+
+DATABASE
+1.แต่ละประเทศ(country) อาจประกอบด้วยใบอณุญาติหลายๆ(certificate_name)ใบ 
+โดยแต่ละประเทศจะมี risk_threshold,alert_threshold แตกต่างกันไปแต่่ละประเทศ
+2.แต่ละใบอณุญาติ(certificate_name) อาจประกอบไปด้วยหลายๆหมายเลขใบอณุญาติ(certificate_no)
+3.โดยหมายเลขใบอณุญาติ(certificate_no) แต่ละหมายเลขจะมี สถานะ(status), วันออกใบอณุญาติ(issue_date), 
+วันหมดอายุ(expire_date),  report_issue_date,  report_no และรายชื่อของ indoor_models 
+และ outdoor_models ที่ครอบคลุมโดยรายชื่อนี้อาจมีมากกว่า 1
+4.ซึ่งแต่ละ indoor_models และ outdoor_models จะมีการจับคู่การใช้งานด้วย โดย 1 indoor_models 
+อาจใช้คู่ได้กับ outdoor_models มากกว่า 1 รายชื่อได้ด้วย outdoor_models ก็เช่นกัน 
+5.โดย indoor_models และ outdoor_models อาจถูกครอบคลุมด้วย หมายเลขใบอณุญาติ(certificate_no) ได้เช่นกัน
+
+
+
+def menu(request):
+    query = request.GET.get('q')
+
+    countries = [
+        {'name': 'ISO', 'url': '', 'image': 'app_general/iso.png'},
+        {'name': 'China', 'url': '', 'image': 'app_general/china.png'},
+        {'name': 'Europe(PED)', 'url': '', 'image': 'app_general/european-union.png'},
+        {'name': 'Uzbekistan', 'url': '', 'image': 'app_general/uzbekistan.png'},
+        {'name': 'Middle East', 'url': '', 'image': 'app_general/middleeast.png'},
+        {'name': 'Saudi Arabia', 'url': '', 'image': 'app_general/saudi.png'},
+        {'name': 'Malaysia', 'url': '', 'image': 'app_general/malaysia.png'},
+        {'name': 'Singapore', 'url': '', 'image': 'app_general/singapore.png'},
+        {'name': 'Philippines', 'url': '', 'image': 'app_general/philippin.png'},
+        {'name': 'Indonesia', 'url': '', 'image': 'app_general/indonesia.png'},
+        {'name': 'Vietnam', 'url': '', 'image': 'app_general/vietnam.png'},
+        {'name': 'Thailand', 'url': '', 'image': 'app_general/thailand.png'},
+        {'name': 'Russia', 'url': '', 'image': 'app_general/russia.png'},
+        {'name': 'Ukraine', 'url': '', 'image': 'app_general/ukraine.png'},
+        {'name': 'France', 'url': '', 'image': 'app_general/france.png'},
+        {'name': 'Eurovent', 'url': '', 'image': 'app_general/eurovent.jpg'},
+        {'name': 'Keymark', 'url': '', 'image': 'app_general/keymark.png'},
+        {'name': 'India', 'url': '', 'image': 'app_general/india.png'},
+        {'name': 'Hong Kong', 'url': '', 'image': 'app_general/hongkong.png'},
+        {'name': 'Taiwan', 'url': '', 'image': 'app_general/taiwan.png'},
+        {'name': 'USA', 'url': '', 'image': 'app_general/usa.png'},
+        {'name': 'Australia', 'url': '', 'image': 'app_general/australia.png'},
+        {'name': 'LVD', 'url': '', 'image': 'app_general/lvd.png'},
+        {'name': 'EMC', 'url': '', 'image': 'app_general/emc.png'},
+    ]
+
+    # Filter countries based on search query
+    if query:
+        countries = [country for country in countries if query.lower() in country['name'].lower()]
+
+    # Add the count of certifications for each country
+    for country in countries:
+        count = Certification.objects.filter(country=country['name']).count()
+        country['count'] = count
+
+    return render(request, 'app_general/menu.html', {'countries': countries}) ต้องแก้ไขอะไรให้หรือไม่สอดคล้องกับ app_certifications models.py
+
+
+วันนี้เรามาเริ่มต้นจากการสร้าง database ด้วย models.py ไปด้วยกันนะ 
+โดย database ที่ฉันจะสร้างมีรายละเอียดดังต่อไปนี้นะ 
+        การที่จะส่งออกเครื่องปรับอากาศไปขายยังประเทศใดประเทศหนึ่งได้นั้น เราจำเป็นต้องทำการทดสอบ Item test ให้ครบทุกๆ Item test ที่ประเทศนั้นๆกำหนดเสียก่อน
+        โดยแต่ละประเทศจะกำหนดไม่เหมือนกัน เช่นประเทศไทยกำหนดให้มีการทดสอบ Item test : Pressure test แต่ประเทศอินเดียไม่มี
+        โดยแต่ละ Item test อาจมีหลายๆ Specification ได้และแต่ละ Specification จะมี type ของตัวเองเป็นไปได้ทั้งหมด 2 typeคือ(S  : Sampling test และ R : Routine test)
+        โดยแต่ละประเทศจะมีการกำหนดให้ ทดสอบ Item test Specification ให้มีการทดสอบหรือไม่มีก็ได้ หากกำหนดให้มีแล้วจะต้องกำหนดสัญลักษณ์เพิ่มเติม เป็นไปได้ 4 คือ (1 : Should be tested (If possible) , 2 : Std.requirement (Must be tested), 3 : Std.requirement must be tested at  external lab --> CCC, 4 : Std.requirement which can select testing (Between Pressure and Refri. leakage test.) --> QCO) โดยเลือกได้อย่างใดอย่างหนึ่งเท่านั้น
+        โดยรูปแบบการแสดงข้อมูลที่ฉันจะทำต่อไปเป็นประมาณนี้เป็นประมาณนี้
+
+   Item test            Specification                                   type       Thailand    India ...... USA
+1.Pressure test     1.1Refrigerant-containing part of...   R                -              1   ......    -
+                            1.2Compress Air or................................   R                1              -   ......    -
+2....
+3...
+4.....
+โดย
